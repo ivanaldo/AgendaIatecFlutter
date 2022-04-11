@@ -44,14 +44,14 @@ class _AgendarEventoState extends State<AgendarEvento> {
           if(local.isNotEmpty && local.length <= 100){
             if(descricao.isNotEmpty && descricao.length <= 250){
 
-              var emailExiste = await perfilUsuario.getSearchEmailExiste(tipo, data);
+              var emailExiste = await perfilUsuario.getSearchTipoAgendaExiste(tipo, data);
 
               if(emailExiste == false){
                 try{
                   mensagem.abrirDialog(_dialogContext);
 
                   var agenda = AgendaModel(nome: nome, tipo: tipo, descricao: descricao, data: data, local: local);
-                  AgendaModel valor = await perfilUsuario.createUsuario(usuario);
+                  AgendaModel valor = await perfilUsuario.createAgenda(agenda);
                   if(valor.nome.isNotEmpty){
                     Navigator.pop(_dialogContext);
                     mensagem.mensagemSucess();

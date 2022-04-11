@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/mensagem.dart';
 
 abstract class SearchDataSourceAgenda {
-  Future<AgendaModel> getSearchAgenal();
+  Future<List<AgendaModel>> getSearchAgenda();
   Future<bool> getSearchTipoAgendaExiste( String tipo, String data);
   Future<AgendaModel> createAgenda(AgendaModel agendaModel);
   Future<bool> updateAgenda(String? id, AgendaModel agendaModel);
@@ -19,17 +19,17 @@ final mensagem = Modular.get<Mensagens>();
 
 class GetRepositoryAgenda implements SearchDataSourceAgenda {
   final dio = Modular.get<Dio>();
-  String url = "https://10.0.2.2:7082/api/UsuarioModels";
+  String url = "https://10.0.2.2:7082/api/AgendaModels";
 
   @override
-  Future<AgendaModel> getSearchAgenal() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? id = prefs.getString('idPerfilUsuario');
+  Future<List<AgendaModel>> getSearchAgenda() async {
 
-    final response = await dio.get('$url${'/'}$id');
+    final response = await dio.get(url);
     if (response.statusCode == 200) {
       try {
-        return AgendaModel.fromMap(response.data);
+        final List<AgendaModel> lista =
+        (response.data as List).map((e) => AgendaModel.fromMap(e)).toList();
+        return lista;
       } catch (e) {
         Exception(e);
       }

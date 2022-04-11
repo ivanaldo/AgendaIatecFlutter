@@ -4,7 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../repositorys/get_repository_usuario.dart';
 
 
-final perfilUsuario = Modular.get<GetRepository>();
+final perfilUsuario = Modular.get<GetRepositoryUsuario>();
 
 abstract class PerfilEvent {}
 
