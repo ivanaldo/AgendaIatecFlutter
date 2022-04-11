@@ -22,7 +22,6 @@ class InputCustomizado extends StatelessWidget {
       ),
         obscureText: obscure,
         decoration: InputDecoration(
-          labelText: hint,
           contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             prefixIcon: icon,
             hintText: hint,

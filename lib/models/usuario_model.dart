@@ -1,32 +1,43 @@
+
 class UsuarioModel{
+
+  int? id;
   late String nome;
   late String email;
   late String senha;
   late String datanascimento;
-  late String sexo;
+  String? genero;
 
-  UsuarioModel({required this.nome, required this.email, required this.senha, required this.datanascimento, required this.sexo});
+  UsuarioModel({
+     this.id,
+    required this.nome,
+    required this.email,
+    required this.senha,
+    required this.datanascimento,
+    required this.genero,
+  });
 
-  factory UsuarioModel.fromJson(Map<String, dynamic> json){
+  factory UsuarioModel.fromMap(Map<String, dynamic> map){
     return UsuarioModel(
-    nome:           json["nome"],
-    email:          json["email"],
-    senha:          json["senha"],
-    datanascimento: json["datanascimento"],sexo: json["sexo"]);
+    id             : map["id"],
+    nome           : map["nome"],
+    email          : map["email"],
+    senha          : map["senha"],
+    datanascimento : map["dataNascimento"],
+    genero         : map["genero"],
+    );
+
   }
 
-  Map<String, dynamic> toJson(){
+  Map<String, dynamic> toMap(){
     return{
-      "nome"  : nome,
-      "email" : email,
-      "senha" : senha,
-      "datanascimento" : datanascimento,
-      "sexo"  : sexo
+      "id"             : id,
+      "nome"           : nome,
+      "email"          : email,
+      "senha"          : senha,
+      "dataNascimento" : datanascimento,
+      "genero"           : genero,
     };
   }
 
-  @override
-  String toString() {
-    return 'UsuarioModel{nome: $nome, email: $email, senha: $senha, datanascimento: $datanascimento, sexo: $sexo}';
-  }
 }

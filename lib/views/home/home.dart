@@ -1,10 +1,10 @@
-import 'package:agenda_iatec/views/agenda/agendar_evento.dart';
-import 'package:agenda_iatec/views/agenda/meus_evento.dart';
 import 'package:agenda_iatec/views/agenda/proximo_evento.dart';
 import 'package:agenda_iatec/views/agenda/evento_em_andamento.dart';
-import 'package:agenda_iatec/views/usuario/perfil.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+
+import '../../models/debouncer.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -17,10 +17,33 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   late TabController _tabController;
 
+  //bool _progresBarLinear;
+  bool searchState = false;
+  bool retornoMensagem = true;
+  int favoritos = 0;
+  int valorControllerTab = 0;
+  //String valor;
+ // List<Anuncio> lista = [];
+  final _debouncer = Debouncer(milliseconds: 800);
+
+
   @override
   void initState() {
     super.initState();
+    //retornarQuantidadeFavoritos();
+    //_progresBarLinear = true;
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() {
+      if (!_tabController.indexIsChanging) {
+        setState(() {
+          valorControllerTab = _tabController.index;
+          searchState = false;
+          //lista.clear();
+          //searchAnuncio();
+        });
+      }
+    });
+    //searchAnuncio();
   }
 
   @override
@@ -33,7 +56,21 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Agenda IATec", style: TextStyle(color: Colors.black),),
+        title: !searchState
+            ? const Text("Agenda IATec", style: TextStyle(color: Colors.black),)
+            : TextField(
+                decoration: const InputDecoration(
+                  icon: Icon(Icons.search),
+                  hintText: "Search ...",
+                  hintStyle: TextStyle(color: Colors.white),
+                ),
+                onChanged: (text) {
+                  _debouncer.run(() {
+                    String texto = text.toLowerCase();
+                    // searchAnuncio(search: texto);
+                  });
+                },
+              ),
         centerTitle: true,
         backgroundColor: Colors.transparent, //Colors.grey[100],
         elevation: 0.0,
@@ -63,6 +100,28 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
             ),
           ],
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: !searchState
+                ? IconButton(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      setState(() {
+                        searchState = !searchState;
+                      });
+                    },
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.cancel),
+                    onPressed: () {
+                      setState(() {
+                        searchState = !searchState;
+                      });
+                    },
+                  ),
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -75,21 +134,21 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
               title: const Text("Perfil"),
               leading: const Icon(Icons.account_circle),
               onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const Perfil()));
+                Modular.to.pushNamed('Perfil');
               },
             ),
             ListTile(
               title: const Text("Agendar Evento"),
               leading: const Icon(Icons.date_range),
               onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const AgendarEvento()));
+                Modular.to.pushNamed('AgendarEvento');
               },
             ),
             ListTile(
               title: const Text("Meus Eventos"),
               leading: const Icon(Icons.calendar_today_rounded),
               onTap: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const MeusEvento()));
+                Modular.to.pushNamed('MeusEventos');
               },
             )
           ],

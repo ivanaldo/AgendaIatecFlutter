@@ -1,8 +1,12 @@
-import 'package:agenda_iatec/views/autenticacao/cadastro.dart';
+import 'package:agenda_iatec/models/mensagem.dart';
+import 'package:agenda_iatec/models/usuario_model.dart';
+import 'package:agenda_iatec/repositorys/get_repository_usuario.dart';
 import 'package:agenda_iatec/customizados/input_button_customizados.dart';
 import 'package:agenda_iatec/customizados/input_customizado.dart';
-import 'package:agenda_iatec/views/home/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -16,14 +20,30 @@ class _LoginState extends State<Login> {
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerSenha = TextEditingController();
 
-  _validarUsuario(){
+  _validarUsuario() async {
+    final perfilUsuario = Modular.get<GetRepositoryUsuario>();
+    final prefs = await SharedPreferences.getInstance();
+    final mensagem = Modular.get<Mensagens>();
+
     String email = controllerEmail.text.trim();
     String senha = controllerSenha.text.trim();
 
-    if(email == "ivanaldogc@gmail.com" && senha == "1234"){
-      Future.delayed(const Duration(seconds: 2)).then((value) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
-      });
+    if(email.isNotEmpty && email.contains("@")){
+      if(senha.isNotEmpty && senha.length >= 6){
+
+        try{
+          UsuarioModel usuarioModel = await perfilUsuario.getSearchLogin( email, senha);
+          await prefs.setString('idPerfilUsuario', usuarioModel.id.toString());
+          Modular.to.navigate('/Home');
+        }catch(e){
+          Exception(e);
+        }
+
+      }else{
+        mensagem.mensagemPreencha("senha com 6 ou mais caracteres");
+      }
+    }else{
+      mensagem.mensagemPreencha("email válido");
     }
   }
 
@@ -52,7 +72,7 @@ class _LoginState extends State<Login> {
                       const SizedBox(width: 10),
                       GestureDetector(
                         onTap: (){
-                          Navigator.push(context, MaterialPageRoute(builder: (context)=> const Cadastro()));
+                          Modular.to.pushNamed('/Cadastro');
                         },
                         child: const Text("Cadastre-se aqui!",
                             style: TextStyle(color: Colors.blueAccent)
