@@ -3,14 +3,13 @@ import 'package:agenda_iatec/models/agenda_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-
 import '../../configuracoes_dropdown/dropdown_tipo_agenda.dart';
 import '../../customizados/data_customizada.dart';
 import '../../customizados/input_customizado.dart';
 import '../../customizados/input_dropdown_button_sexo.dart';
 import '../../models/mensagem.dart';
 import '../../repositorys/get_repository_agenda.dart';
-import '../../repositorys/get_repository_usuario.dart';
+
 
 class AgendarEvento extends StatefulWidget {
   const AgendarEvento({Key? key}) : super(key: key);
@@ -37,6 +36,7 @@ class _AgendarEventoState extends State<AgendarEvento> {
     String? tipo = _tipoAgendaSelecionado;
     String local = controllerLocal.text.trim();
     String descricao = controllerDescricao.text.trim();
+    String hora = controllerDescricao.text.trim();
 
     if(nome.isNotEmpty && nome.length >= 5){
       if(data.isNotEmpty && data.length >= 10){
@@ -44,13 +44,13 @@ class _AgendarEventoState extends State<AgendarEvento> {
           if(local.isNotEmpty && local.length <= 100){
             if(descricao.isNotEmpty && descricao.length <= 250){
 
-              var emailExiste = await perfilUsuario.getSearchTipoAgendaExiste(tipo, data);
+              var emailExiste = await perfilUsuario.getSearchTipoAgendaExiste(data);
 
               if(emailExiste == false){
                 try{
                   mensagem.abrirDialog(_dialogContext);
 
-                  var agenda = AgendaModel(nome: nome, tipo: tipo, descricao: descricao, data: data, local: local);
+                  var agenda = AgendaModel(nome: nome, tipo: tipo, descricao: descricao, data: data, local: local, hora: hora);
                   AgendaModel valor = await perfilUsuario.createAgenda(agenda);
                   if(valor.nome.isNotEmpty){
                     Navigator.pop(_dialogContext);
@@ -60,17 +60,17 @@ class _AgendarEventoState extends State<AgendarEvento> {
                   Exception(e);
                 }
               }else{
-                mensagem.mensagemEmailExiste();
+                mensagem.mensagemExiste();
               }
 
             }else{
-              mensagem.mensagemPreencha("senha com 6 ou mais caracteres");
+              mensagem.mensagemPreencha("descrição");
             }
           }else{
-            mensagem.mensagemPreencha("email válido");
+            mensagem.mensagemPreencha("local");
           }
         }else{
-          mensagem.mensagemPreencha("sexo");
+          mensagem.mensagemPreencha("genda");
         }
       }else{
         mensagem.mensagemPreencha("data de nascimento");
@@ -219,7 +219,7 @@ class _AgendarEventoState extends State<AgendarEvento> {
                       child:  InputButtonCustomizado(
                         text: "Agendar evento",
                         onPressed: (){
-
+                          cadastraAgenda();
                         },
                       )
                   ),

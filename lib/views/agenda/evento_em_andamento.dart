@@ -1,6 +1,7 @@
 import 'package:agenda_iatec/bloc/agenda_cubit.dart';
 import 'package:agenda_iatec/models/agenda_model.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 
 
@@ -17,7 +18,7 @@ class _EventoEmAndamentoState extends State<EventoEmAndamento> {
   @override
   void initState() {
     super.initState();
-    agenda.add(RetornaAgendas());
+    agenda.add(RetornaAgendasAndamento());
   }
 
   @override
@@ -49,6 +50,17 @@ class _EventoEmAndamentoState extends State<EventoEmAndamento> {
                   padding: const EdgeInsets.all(8),
                   itemCount: list.length,
                   itemBuilder: (BuildContext context, int index) {
+
+                    if(list[index].tipo == "E"){
+                      list[index].tipo = "Exclusivo";
+                    }else {
+                      list[index].tipo = "Compartilhado";
+                    }
+
+                    var dateTime = DateTime.parse(list[index].data);
+                    var dataFormatada = DateFormat("dd/MM/yyyy");
+                    var data = dataFormatada.format(dateTime);
+
                     return GestureDetector(
                       onTap: () {},
                       child: Card(
@@ -75,13 +87,13 @@ class _EventoEmAndamentoState extends State<EventoEmAndamento> {
                                           Text(
                                             list[index].nome,
                                             style: const TextStyle(
-                                                fontSize: 18,
+                                                fontSize: 20,
                                                 fontWeight:
                                                 FontWeight
                                                     .bold),
                                           ),
                                           Text(
-                                            list[index].data,
+                                            data,
                                             style: const TextStyle(
                                               fontSize: 18,
                                             ),

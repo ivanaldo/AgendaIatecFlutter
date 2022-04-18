@@ -1,8 +1,10 @@
-import 'package:agenda_iatec/views/agenda/proximo_evento.dart';
-import 'package:agenda_iatec/views/agenda/evento_em_andamento.dart';
+import 'package:agenda_iatec/bloc/agenda_cubit.dart';
+import 'package:agenda_iatec/models/agenda_model.dart';
+import 'package:agenda_iatec/views/agenda/detalhes_evento.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:intl/intl.dart';
 
 import '../../models/debouncer.dart';
 
@@ -16,44 +18,54 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
 
   late TabController _tabController;
-
-  //bool _progresBarLinear;
   bool searchState = false;
-  bool retornoMensagem = true;
-  int favoritos = 0;
   int valorControllerTab = 0;
-  //String valor;
- // List<Anuncio> lista = [];
   final _debouncer = Debouncer(milliseconds: 800);
+  final agenda = AgendaBloc();
 
+  searchAgendas(String texto){
+    setState(() {
+      AgendaModel.search = texto;
+      AgendaModel.tabController = valorControllerTab;
+    });
+      agenda.add(RetornaAgendasSearch());
+  }
 
   @override
   void initState() {
     super.initState();
-    //retornarQuantidadeFavoritos();
-    //_progresBarLinear = true;
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         setState(() {
           valorControllerTab = _tabController.index;
           searchState = false;
-          //lista.clear();
-          //searchAnuncio();
+          if(valorControllerTab == 0){
+            agenda.add(RetornaAgendasAndamento());
+          }else{
+            agenda.add(RetornaAgendasProximo());
+          }
         });
       }
     });
-    //searchAnuncio();
+    agenda.add(RetornaAgendasAndamento());
   }
 
   @override
-  void dispose() {
+  void dispose() async{
     super.dispose();
     _tabController.dispose();
+    await agenda.close();
   }
 
   @override
   Widget build(BuildContext context) {
+    var carregandoDados = Center(
+      child: Column(children: const <Widget>[
+        Text("Carregando agenda"),
+        CircularProgressIndicator()
+      ],),
+    );
     return Scaffold(
       appBar: AppBar(
         title: !searchState
@@ -62,12 +74,12 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                 decoration: const InputDecoration(
                   icon: Icon(Icons.search),
                   hintText: "Search ...",
-                  hintStyle: TextStyle(color: Colors.white),
+                  hintStyle: TextStyle(color: Colors.grey),
                 ),
                 onChanged: (text) {
                   _debouncer.run(() {
                     String texto = text.toLowerCase();
-                    // searchAnuncio(search: texto);
+                    searchAgendas(texto);
                   });
                 },
               ),
@@ -117,6 +129,8 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
                     onPressed: () {
                       setState(() {
                         searchState = !searchState;
+                        AgendaModel.search = "";
+                        agenda.add(RetornaAgendasSearch());
                       });
                     },
                   ),
@@ -150,16 +164,100 @@ class _HomeState extends State<Home> with SingleTickerProviderStateMixin{
               onTap: (){
                 Modular.to.pushNamed('MeusEventos');
               },
+            ), ListTile(
+              title: const Text("Sair"),
+              leading: const Icon(Icons.close),
+              onTap: (){
+                Modular.to.navigate("/Login");
+              },
             )
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const <Widget>[
-          EventoEmAndamento(),
-          ProximoEvento()
-        ],
+      body: StreamBuilder<List<AgendaModel>>(
+          stream: agenda.stream,
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return carregandoDados;
+              case ConnectionState.active:
+              case ConnectionState.done:
+              //Exibe mensagem de erro
+                if (snapshot.hasError) {
+                  return const Text("Erro ao carregar os dados!");
+                }
+                List<AgendaModel> list = snapshot.data!;
+
+                return ListView.builder(
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.all(8),
+                    itemCount: list.length,
+                    itemBuilder: (BuildContext context, int index) {
+
+                      var dateTime = DateTime.parse(list[index].data);
+                      var dataFormatada = DateFormat("dd/MM/yyyy");
+                      var data = dataFormatada.format(dateTime);
+
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) => DetalhesEvento(list[index])));
+                        },
+                        child: Card(
+                          margin: const EdgeInsets.only(
+                              top: 4, bottom: 4, right: 8, left: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: <Widget>[
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment
+                                              .start,
+                                          children: [
+                                            Text(
+                                              list[index].nome,
+                                              style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight:
+                                                  FontWeight
+                                                      .bold),
+                                            ),
+                                            Text(
+                                              data,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                            const Padding(
+                                                padding:
+                                                EdgeInsets.only(
+                                                    top: 16)),
+                                            Text(list[index].local),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+                );
+            }
+          }
       ),
     );
   }

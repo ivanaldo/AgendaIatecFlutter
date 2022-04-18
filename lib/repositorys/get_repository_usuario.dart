@@ -111,7 +111,7 @@ class GetRepositoryUsuario implements SearchDataSourceUsuario {
     if(usuario.genero == 'Masculino'){
       usuario.genero = 'M';
     }else if(usuario.genero == 'Feminino'){
-      usuario.genero == "F";
+      usuario.genero = "F";
     }
 
     Map data = {
@@ -147,21 +147,3 @@ class GetRepositoryUsuario implements SearchDataSourceUsuario {
   }
 
 }
-
-/*
- @override
-  Future<UsuarioModel> getSearch() async {
-    final response = await dio.get(url);
-    if (response.statusCode == 200) {
-      try {
-        final list =
-        (response.data as List).map((e) => UsuarioModel.fromMap(e))
-            .firstWhere((element) => element.id == usuarioPerfil.id);
-        return list;
-      } catch (e) {
-        Exception(e);
-      }
-    } else {}
-    throw Exception("Falhou");
-  }
- */

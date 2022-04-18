@@ -51,7 +51,7 @@ class Mensagens {
     );
   }
 
-  mensagemEmailExiste (){
+  mensagemExiste (){
     Fluttertoast.showToast(
         msg: "Esse email já foi cadastrado, tente outro email!",
         toastLength: Toast.LENGTH_SHORT,

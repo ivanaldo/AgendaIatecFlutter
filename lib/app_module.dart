@@ -2,6 +2,7 @@ import 'package:agenda_iatec/models/mensagem.dart';
 import 'package:agenda_iatec/repositorys/get_repository_agenda.dart';
 import 'package:agenda_iatec/repositorys/get_repository_usuario.dart';
 import 'package:agenda_iatec/views/agenda/agendar_evento.dart';
+import 'package:agenda_iatec/views/agenda/detalhes_evento.dart';
 import 'package:agenda_iatec/views/agenda/meus_evento.dart';
 import 'package:agenda_iatec/views/autenticacao/cadastro.dart';
 import 'package:agenda_iatec/views/autenticacao/login.dart';
@@ -28,6 +29,7 @@ class AppModule extends Module{
     ChildRoute('/Home', child: (context, args) => const Home()),
     ChildRoute('/Perfil', child: (context, args) => const Perfil()),
     ChildRoute('/AgendarEvento', child: (context, args) => const AgendarEvento()),
-    ChildRoute('/MeusEventos', child: (context, args) => const MeusEvento())
+    ChildRoute('/MeusEventos', child: (context, args) => const MeusEvento()),
+
   ];
 }

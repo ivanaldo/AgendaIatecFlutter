@@ -2,13 +2,13 @@ import 'package:agenda_iatec/models/agenda_model.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../models/mensagem.dart';
 
 abstract class SearchDataSourceAgenda {
-  Future<List<AgendaModel>> getSearchAgenda();
-  Future<bool> getSearchTipoAgendaExiste( String tipo, String data);
+  Future<List<AgendaModel>> getSearchAgendaAndamento(String data);
+  Future<List<AgendaModel>> getSearchAgendaProxima(String data);
+  Future<bool> getSearchTipoAgendaExiste(String data);
+  Future<List<AgendaModel>> getSearchAgendaSearch(String data);
   Future<AgendaModel> createAgenda(AgendaModel agendaModel);
   Future<bool> updateAgenda(String? id, AgendaModel agendaModel);
   Future<bool> deleteAgenda(String? id);
@@ -22,13 +22,14 @@ class GetRepositoryAgenda implements SearchDataSourceAgenda {
   String url = "https://10.0.2.2:7082/api/AgendaModels";
 
   @override
-  Future<List<AgendaModel>> getSearchAgenda() async {
+  Future<List<AgendaModel>> getSearchAgendaAndamento(String data) async {
 
     final response = await dio.get(url);
     if (response.statusCode == 200) {
       try {
         final List<AgendaModel> lista =
-        (response.data as List).map((e) => AgendaModel.fromMap(e)).toList();
+        (response.data as List).map((e) => AgendaModel.fromMap(e))
+            .where((element) => element.data == data).toList();
         return lista;
       } catch (e) {
         Exception(e);
@@ -38,13 +39,66 @@ class GetRepositoryAgenda implements SearchDataSourceAgenda {
   }
 
   @override
-  Future<bool> getSearchTipoAgendaExiste( String tipo, String data) async {
+  Future<List<AgendaModel>> getSearchAgendaProxima(String data) async {
+
+    final response = await dio.get(url);
+    if (response.statusCode == 200) {
+      try {
+        final List<AgendaModel> lista =
+        (response.data as List).map((e) => AgendaModel.fromMap(e))
+            .where((element) => int.parse(element.data.replaceAll("-", "")) > int.parse(data.replaceAll("-", ""))).toList();
+        return lista;
+      } catch (e) {
+        Exception(e);
+      }
+    } else {}
+    throw Exception("Falhou");
+  }
+
+  @override
+  Future<List<AgendaModel>>getSearchAgendaSearch(String data) async {
+    String search = AgendaModel.search;
+
+    if(AgendaModel.tabController == 0) {
+      final response = await dio.get(url);
+      if (response.statusCode == 200) {
+        try {
+          final List<AgendaModel> lista =
+          (response.data as List).map((e) => AgendaModel.fromMap(e))
+              .where((element) =>
+          element.data.contains(search) && element.data == data
+              || element.nome.toLowerCase().contains(search) && element.data == data).toList();
+          return lista;
+        } catch (e) {
+          Exception(e);
+        }
+      } else {}
+    }else{
+      final response = await dio.get(url);
+      if (response.statusCode == 200) {
+        try {
+          final List<AgendaModel> lista =
+          (response.data as List).map((e) => AgendaModel.fromMap(e))
+              .where((element) =>
+          element.data.contains(search) && int.parse(element.data.replaceAll("-", "")) > int.parse(data.replaceAll("-", ""))
+              || element.nome.toLowerCase().contains(search) && int.parse(element.data.replaceAll("-", "")) > int.parse(data.replaceAll("-", ""))).toList();
+          return lista;
+        } catch (e) {
+          Exception(e);
+        }
+      } else {}
+    }
+    throw Exception("Falhou");
+  }
+
+  @override
+  Future<bool> getSearchTipoAgendaExiste( String data) async {
 
     final response = await dio.get(url);
     if (response.statusCode == 200) {
       try {
         (response.data as List).map((e) => AgendaModel.fromMap(e))
-            .firstWhere((element) => element.tipo == tipo && element.data == data);
+            .firstWhere((element) => element.tipo == "E" && element.data == data);
         return true;
       } catch (e) {
         Exception(e);
@@ -68,6 +122,7 @@ class GetRepositoryAgenda implements SearchDataSourceAgenda {
       "descricao"           : agenda.descricao,
       "data"                : dataFormatada,
       "local"               : agenda.local,
+      "hora"                : agenda.hora,
       "participantesModels" : agenda.participantesModels
     };
 
@@ -106,6 +161,7 @@ class GetRepositoryAgenda implements SearchDataSourceAgenda {
       "descricao"           : agenda.descricao,
       "data"                : dataFormatada,
       "local"               : agenda.local,
+      "hora"                : agenda.hora,
       "participantesModels" : agenda.participantesModels
 
     };

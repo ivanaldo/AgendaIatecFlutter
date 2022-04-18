@@ -8,10 +8,13 @@ class AgendaModel {
   late String descricao;
   late String data;
   late String local;
+  late String hora;
   late List<ParticipantesModel>? participantesModels;
+  static late String search;
+  static late int tabController;
 
   AgendaModel({this.id, required this.nome, required this.tipo, required this.descricao, required this.data,
-      required this.local, this.participantesModels});
+      required this.local, required this.hora, this.participantesModels});
 
   factory AgendaModel.fromMap(Map<String, dynamic> map){
     return AgendaModel(
@@ -21,6 +24,7 @@ class AgendaModel {
         descricao           : map["descricao"],
         data                : map["data"],
         local               : map["local"],
+        hora                : map["hora"],
         participantesModels : map["participantesModels"],
     );
   }
@@ -33,6 +37,7 @@ class AgendaModel {
       "descricao"           : descricao,
       "data"                : data,
       "local"               : local,
+      "hora"                : hora,
       "participantesModels" : participantesModels
     };
   }

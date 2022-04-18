@@ -59,7 +59,7 @@ class _CadastroState extends State<Cadastro> {
                   Exception(e);
                 }
               }else{
-                mensagem.mensagemEmailExiste();
+                mensagem.mensagemExiste();
               }
 
             }else{
